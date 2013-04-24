@@ -507,7 +507,7 @@ public class MoreLikeThisHandler extends RequestHandlerBase
   @Override
   public URL[] getDocs() {
     try {
-      return new URL[] { new URL("https://github.com/dfdeshom") };
+      return new URL[] { new URL("https://github.com/dfdeshom/custom-mlt") };
     }
     catch( MalformedURLException ex ) { return null; }
   }
