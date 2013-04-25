@@ -8,6 +8,7 @@
   <name>solr-mlt</name>
   <url>http://maven.apache.org</url>
 
+  
 <build>
     <plugins>
       <plugin>
@@ -30,6 +31,14 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <forceCreation>true</forceCreation>
+        </configuration>
       </plugin>
     </plugins>
 </build>
