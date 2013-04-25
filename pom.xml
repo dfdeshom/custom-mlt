@@ -22,10 +22,10 @@
             </goals>
             <configuration>
               <artifactSet>
-                <excludes>
-                  <exclude>org.apache.lucene:lucene-analyzers-common</exclude>
-                  <exclude>org.slf4j:*</exclude>
-                </excludes>
+                <includes>
+                  <include>org.apache.lucene:lucene-core</include>
+                  <include>org.apache.solr:solr-core</include>
+                </includes>
               </artifactSet>
             </configuration>
           </execution>
