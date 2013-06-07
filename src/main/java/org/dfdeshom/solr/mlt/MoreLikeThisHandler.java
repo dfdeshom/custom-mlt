@@ -154,7 +154,7 @@ public class MoreLikeThisHandler extends RequestHandlerBase
       // Find documents MoreLikeThis - either with a reader or a query
       // --------------------------------------------------------------------------------
       if (reader != null) {
-        mltDocs = mlt.getMoreLikeThis(reader, start, rows, filters,
+        mltDocs = mlt.getMoreLikeThis(reader,sortSpec.getSort(), start, rows, filters,
             interesting, flags);
       } else if (q != null) {
         // Matching options
@@ -174,7 +174,7 @@ public class MoreLikeThisHandler extends RequestHandlerBase
         if (iterator.hasNext()) {
           // do a MoreLikeThis query for each document in results
           int id = iterator.nextDoc();
-          mltDocs = mlt.getMoreLikeThis(parser, id, start, rows, filters, interesting,
+          mltDocs = mlt.getMoreLikeThis(parser, id, sortSpec.getSort(), start, rows, filters, interesting,
               flags);
         }
       } else {
@@ -340,7 +340,7 @@ public class MoreLikeThisHandler extends RequestHandlerBase
     private Query getBoostedQuery(Query mltquery) {
       BooleanQuery boostedQuery = (BooleanQuery)mltquery.clone();
       if (boostFields.size() > 0) {
-        List clauses = boostedQuery.clauses();
+        List<BooleanClause> clauses = boostedQuery.clauses();
         for( Object o : clauses ) {
           TermQuery q = (TermQuery)((BooleanClause)o).getQuery();
           Float b = this.boostFields.get(q.getTerm().field());
@@ -360,8 +360,6 @@ public class MoreLikeThisHandler extends RequestHandlerBase
      * @return Boosted query
      */
     public Query boosted(QParser parser,Query q) throws SyntaxError {
-      //SolrParams localParams = parser.getLocalParams();
-      //String b = localParams.get("b");
       String b = parser.getLocalParams().get("b");
       ValueSource vs;
       if (b == null) return q;
@@ -374,7 +372,7 @@ public class MoreLikeThisHandler extends RequestHandlerBase
       return new BoostedQuery(q,vs);
     }
     
-    public DocListAndSet getMoreLikeThis(QParser parser, int id, int start, int rows, List<Query> filters, List<InterestingTerm> terms, int flags ) throws IOException
+    public DocListAndSet getMoreLikeThis(QParser parser, int id, Sort lsort, int start, int rows, List<Query> filters, List<InterestingTerm> terms, int flags ) throws IOException
     {
       Document doc = reader.document(id);
       rawMLTQuery = mlt.like(id); 
@@ -403,14 +401,14 @@ public class MoreLikeThisHandler extends RequestHandlerBase
       
       DocListAndSet results = new DocListAndSet();
       if (this.needDocSet) {
-        results = searcher.getDocListAndSet(resultingQuery, filters, null, start, rows, flags);
+        results = searcher.getDocListAndSet(resultingQuery, filters, lsort, start, rows, flags);
       } else {
-        results.docList = searcher.getDocList(resultingQuery, filters, null, start, rows, flags);
+        results.docList = searcher.getDocList(resultingQuery, filters, lsort, start, rows, flags);
       }
       return results;
     }
         
-    public DocListAndSet getMoreLikeThis( Reader reader, int start, int rows, List<Query> filters, List<InterestingTerm> terms, int flags ) throws IOException
+    public DocListAndSet getMoreLikeThis( Reader reader, Sort lsort, int start, int rows, List<Query> filters, List<InterestingTerm> terms, int flags ) throws IOException
     {
       // analyzing with the first field: previous (stupid) behavior
       rawMLTQuery = mlt.like(reader, mlt.getFieldNames()[0]);
@@ -420,29 +418,29 @@ public class MoreLikeThisHandler extends RequestHandlerBase
       }
       DocListAndSet results = new DocListAndSet();
       if (this.needDocSet) {
-        results = searcher.getDocListAndSet( boostedMLTQuery, filters, null, start, rows, flags);
+        results = searcher.getDocListAndSet( boostedMLTQuery, filters, lsort, start, rows, flags);
       } else {
-        results.docList = searcher.getDocList( boostedMLTQuery, filters, null, start, rows, flags);
+        results.docList = searcher.getDocList( boostedMLTQuery, filters, lsort, start, rows, flags);
       }
       return results;
     }
 
-    @Deprecated
-    public NamedList<DocList> getMoreLikeThese( DocList docs, int rows, int flags ) throws IOException
-    {
-      IndexSchema schema = searcher.getSchema();
-      NamedList<DocList> mlt = new SimpleOrderedMap<DocList>();
-      DocIterator iterator = docs.iterator();
-      while( iterator.hasNext() ) {
-        int id = iterator.nextDoc();
-        
-        DocListAndSet sim = getMoreLikeThis(null, id, 0, rows, null, null, flags );
-        String name = schema.printableUniqueKey( reader.document( id ) );
-
-        mlt.add(name, sim.docList);
-      }
-      return mlt;
-    }
+//    @Deprecated
+//    public NamedList<DocList> getMoreLikeThese( DocList docs, int rows, int flags ) throws IOException
+//    {
+//      IndexSchema schema = searcher.getSchema();
+//      NamedList<DocList> mlt = new SimpleOrderedMap<DocList>();
+//      DocIterator iterator = docs.iterator();
+//      while( iterator.hasNext() ) {
+//        int id = iterator.nextDoc();
+//        
+//        DocListAndSet sim = getMoreLikeThis(null, id, 0, rows, null, null, flags );
+//        String name = schema.printableUniqueKey( reader.document( id ) );
+//
+//        mlt.add(name, sim.docList);
+//      }
+//      return mlt;
+//    }
     
     public NamedList<BooleanQuery> getMoreLikeTheseQuery(DocList docs)
         throws IOException {
@@ -473,7 +471,7 @@ public class MoreLikeThisHandler extends RequestHandlerBase
     
     private void fillInterestingTermsFromMLTQuery( Query query, List<InterestingTerm> terms )
     { 
-      List clauses = ((BooleanQuery)query).clauses();
+      List<BooleanClause> clauses = ((BooleanQuery)query).clauses();
       for( Object o : clauses ) {
         TermQuery q = (TermQuery)((BooleanClause)o).getQuery();
         InterestingTerm it = new InterestingTerm();
