@@ -1,7 +1,12 @@
 Solr MLT
 ---------
 
-``solr-mlt`` adds the ability to boost mlt requests from ``MoreLikeThisHandler`` by arbitrary function queries. It relies on edismax, and  may not work with other ``QParser``s 
+``solr-mlt`` adds the ability to:
+
+* boost MLT requests from ``MoreLikeThisHandler`` by arbitrary function queries. It relies on edismax, and  may not work with other ``QParser``s 
+
+* sort MLT query results by using the ``sort`` parameter
+
 
 Building
 ---------
