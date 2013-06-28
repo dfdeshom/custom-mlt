@@ -26,4 +26,7 @@ Making requests:
 ----------------
 you need to speciy  ``edismax`` as your query parser and you need to specify the default field (``df``) on which to apply this request, if it's not specified in your ``schema.xml``. Example request:
 
-``curl http://localhost:8983/mlt?q={!boost%20b=recip(ms(NOW,pub_date),3.16e-11,1,1)%20defType=edismax}l}search term&mlt.fl=field&df=field``
+``curl http://localhost:8983/collection1/mlt?q={!boost%20b=recip(ms(NOW,pub_date),3.16e-11,1,1)%20defType=edismax}search term&mlt.fl=field&df=field``
+
+To sort mlt results by a field, for example, ``pub_date``:
+``curl http://localhost:8983/collection1/mlt?q=search term&mlt.fl=content&sort=pub_date desc``
